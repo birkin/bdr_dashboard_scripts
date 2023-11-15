@@ -16,5 +16,4 @@ def get_bdr_collections():
     return result 
 
 if __name__ == '__main__':
-    print( 'Dict of bdr collections: '+get_bdr_collections() )
-    
+    print( f'Dict of bdr collections: {get_bdr_collections()}' )
