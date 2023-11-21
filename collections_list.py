@@ -19,6 +19,7 @@ def get_bdr_collections():
     return result 
 
 if __name__ == '__main__':
+    #use columnar to make printout show columns
     bdr_collections = get_bdr_collections()
     collection_table = [[key,value] for key,value in bdr_collections.items()]
     print(columnar(collection_table,headers=['collection', 'no. items'],no_borders=True))
