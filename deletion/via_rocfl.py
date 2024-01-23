@@ -1,11 +1,11 @@
-import argparse, logging, os
+import argparse, logging, os, pathlib
 
 ## 3rd party
 from dotenv import load_dotenv, find_dotenv
 
 ## load envars
 load_dotenv( find_dotenv(raise_error_if_not_found=True) )
-STORAGE_ROOT_PATH = os.environ['DEL__STORAGE_ROOT_PATH']
+STORAGE_ROOT_PATH = pathlib.Path( os.environ['DEL__STORAGE_ROOT_PATH'] )
 
 ## setup logging
 lglvl: str = os.environ.get( 'DEL__LOGLEVEL', 'DEBUG' )
@@ -26,7 +26,11 @@ def delete_items( pids ):
         try:
             pass
             ## cd to repo root
+            os.chdir( STORAGE_ROOT_PATH.resolve() )  # `str(pathlib-obj)` also works, but resolve() guarantees an absolute path
             ## assemble command
+            rocfl_cmd = [
+                
+            ]
             ## run command
         except Exception as e:
             msg = f'problem deleting pid, ``{pid}``; exception, ``{e}``'
