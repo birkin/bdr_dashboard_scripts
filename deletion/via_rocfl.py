@@ -19,6 +19,7 @@ logging.basicConfig(
 log = logging.getLogger( __name__ )
 
 
+## manager function
 def delete_items( pids ):
     for pid in pids:
         log.debug( f'deleting pid, ``{pid}``' )
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     log.debug( f'args: {args}' )
     ## get PIDS -----------------------------------------------------
     submitted_pids = args.pids.split(',')
-    assert type( pids ) == list
+    assert type( submitted_pids ) == list
     pids = [ pd.strip() for pd in submitted_pids ]  # removes any whitespace before or after the pid
     log.debug( f'cleaned pids, ``{pids}``' )
     ## call manager function ----------------------------------------
