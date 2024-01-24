@@ -1,0 +1,6 @@
+OCFL_DIR = '../ocfl_dir'
+ROCFL_CMD = '../rocfl_experimentation/rocfl'
+LOG_FILE = '../ocfl_cleanup.log'
+PIDS_FILE = '../pids_to_delete.txt'
+DRY_RUN = False
+#DRY_RUN = True
