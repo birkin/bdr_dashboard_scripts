@@ -12,7 +12,7 @@ Suggestion... we put 50-word summaries here, and link to internal READMEs for mo
 
 - `get_is-part-of_pids`
     - short summary: Walkthrough of how to get a list of pids that are "part-of" another object.
-    - more info: TODO
+    - [more info](https://github.com/Brown-University-Library/bdr_scripts/blob/main/get_is-part-of_pids/README.md)
 
 - `purge_ocfl`
     - short summary: TODO
