@@ -1,0 +1,76 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/mods/v3/mods-3-8.xsd">
+  <mods:titleInfo>
+    <mods:title>Protestants &amp; Other Americans United for Separation of Church &amp; State records</mods:title>
+  </mods:titleInfo>
+  <mods:name type="corporate" authority="naf" valueURI="http://id.loc.gov/authorities/names/n87889933" authorityURI="http://id.loc.gov/authorities/names.html">
+    <mods:namePart>Protestants and Other Americans United for Separation of Church and State</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">creator</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="corporate" authority="local">
+    <mods:namePart>Arcadia Fund</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Funder</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="corporate" authority="naf" valueURI="http://id.loc.gov/authorities/names/n78086020" authorityURI="http://id.loc.gov/authorities/names.html">
+    <mods:namePart>United States. National Historical Publications and Records Commission</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Funder</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="personal" authority="viaf" valueURI="http://viaf.org/viaf/53137966" authorityURI="https://viaf.org">
+    <mods:namePart>Lynn, Barry W.</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text">Executive Director</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:typeOfResource authority="primo" authorityURI="https://knowledge.exlibrisgroup.com/Primo/Product_Documentation/020Primo_VE/Primo_VE_(English)/100Loading_Records_from_External_Sources_into_Primo_VE/Configuring_Normalization_Rules_for_External_Resources_(Primo_VE)#Supported_Resource_Types_in_Primo_VE">text_resources</mods:typeOfResource>
+  <mods:abstract type="general" displayLabel="Scope and Contents note">These digital images could include any or all of these types of documents: correspondence, pamphlets, leaflets, photos, flyers, mass mailing, or small publications created by this organization.</mods:abstract>
+  <mods:originInfo>
+    <mods:dateCreated>1953-1967</mods:dateCreated>
+    <mods:dateCreated encoding="w3cdtf" keyDate="yes" point="start">1953</mods:dateCreated>
+    <mods:dateCreated encoding="w3cdtf" point="end">1967</mods:dateCreated>
+    <mods:place>
+      <mods:placeTerm type="text" authority="naf" authorityURI="http://id.loc.gov/authorities/names.html" valueURI="http://id.loc.gov/authorities/names/n79018774">Washington (D.C.)</mods:placeTerm>
+    </mods:place>
+  </mods:originInfo>
+  <mods:language>
+    <mods:languageTerm type="code" authority="iso639">eng</mods:languageTerm>
+    <mods:languageTerm type="text">English</mods:languageTerm>
+  </mods:language>
+  <mods:physicalDescription>
+    <mods:extent>64 folders</mods:extent>
+    <mods:digitalOrigin>reformatted digital</mods:digitalOrigin>
+  </mods:physicalDescription>
+  <mods:accessCondition type="rights statement" xlink:href="http://rightsstatements.org/vocab/InC-EDU/1.0/">In Copyright - Educational Use Permitted</mods:accessCondition>
+  <mods:accessCondition type="restriction on access">Collection is open for research.</mods:accessCondition>
+  <mods:subject>
+    <mods:name type="corporate" authority="naf" valueURI="http://id.loc.gov/authorities/names/n87889933" authorityURI="http://id.loc.gov/authorities/names.html">
+      <mods:namePart>Protestants and Other Americans United for Separation of Church and State</mods:namePart>
+    </mods:name>
+  </mods:subject>
+  <mods:subject authority="lcsh" valueURI="http://id.loc.gov/authorities/subjects/sh85112549" authorityURI="http://id.loc.gov/authorities/subjects.html">
+    <mods:topic>Religion</mods:topic>
+  </mods:subject>
+  <mods:relatedItem type="host">
+    <mods:titleInfo>
+      <mods:title>The Gordon Hall and Grace Hoag Collection of Dissenting and Extremist Printed Propaganda</mods:title>
+    </mods:titleInfo>
+    <mods:identifier type="local">Ms.76</mods:identifier>
+    <mods:location>
+      <mods:physicalLocation>Brown University Library, John Hay Library, University Archives and Manuscripts, Box A, Brown University, Providence, RI, 02912, U.S.A., (http://library.brown.edu/)</mods:physicalLocation>
+      <mods:url>https://www.riamco.org/render?eadid=US-RPB-mshallhoag</mods:url>
+      <mods:holdingSimple>
+        <mods:copyInformation>
+          <mods:shelfLocator>Part 2: P-58</mods:shelfLocator>
+          <mods:electronicLocator>https://apps.library.brown.edu/hall-hoag/catalog/US-RPB-HH_007174</mods:electronicLocator>
+        </mods:copyInformation>
+      </mods:holdingSimple>
+    </mods:location>
+  </mods:relatedItem>
+  <mods:identifier type="local" displayLabel="filename">HH007174</mods:identifier>
+  <mods:note displayLabel="Digital object made available by">Brown University Library, John Hay Library, University Archives and Manuscripts, Box A, Brown University, Providence, RI, 02912, U.S.A., (http://library.brown.edu/)</mods:note>
+  <mods:note type="general">Digital materials are made accessible for purposes of education and research. If you hold the rights to materials included in our digital repository that you did not give permission to and would like removed, contact John Hay Manuscripts and Special Collections at hay@brown.edu. Please describe and include URLs to the material for review.</mods:note>
+</mods:mods>
