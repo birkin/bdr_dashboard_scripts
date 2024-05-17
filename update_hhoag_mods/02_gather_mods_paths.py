@@ -3,7 +3,7 @@
     (eg `HH123456` for orgs, or `HH123456_0001` for items). 
 Purpose: this json file will be enhanced with bdr-pids in a later step.
 Usage: python ./update_hhoag_mods/02_gather_mods_paths.py
-Output: '../support_stuff/update_hhoag_orgs_support_stuff//02b_hhoag_mods_paths.json', so not in repo.
+Output: '../support_stuff/update_hhoag_orgs_support_stuff/02b_hhoag_mods_paths.json', so not in repo.
 
 Note that one of the functions has a doctest. All doctests can be run with the following command:
 `python -m doctest ./update_hhoag_mods/02_gather_mods_paths.py -v`
@@ -43,7 +43,7 @@ def save_id_dict( id_dict: dict ) -> None:
     """ Saves id_dict to json file.
         Called by manage_id_dict() """
     jsn = json.dumps( id_dict, sort_keys=True, indent=2 )
-    json_filepath = pathlib.Path( '../support_stuff/update_hhoag_orgs_support_stuff//02b_hhoag_mods_paths.json' )  # not in repo
+    json_filepath = pathlib.Path( '../support_stuff/update_hhoag_orgs_support_stuff/02b_hhoag_mods_paths.json' )  # not in repo
     with open( json_filepath, 'w' ) as f:
         f.write( jsn )
     return

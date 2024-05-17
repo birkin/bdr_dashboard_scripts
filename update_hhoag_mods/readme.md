@@ -12,7 +12,7 @@
     - This needs to be run on the server where the mount to the hhoag-images exists, because the script uses the image-scan directories (given that it's purpose is to create directories for eventual full-pipeline file-processing).
     - The `make_dirs.py` outputs 13,530 files (about 60MB), so they're not stored in this repo, but at `parent_dir/all_97_orgs_mods_xml_files/`. Note that make_dirs.py outputs a structure like `orgA` dir, which contains the `orgA.mods.xml` file, and subdirs like `orgA_0001` dir, which contains the `orgA_0001.mods.xml` file.
 
-- run the future `02_gather_mods_paths.py` to create a json file ("data_files/02_mods_paths.json") of an identifier-to-path dict
+- (done) run the `02_gather_mods_paths.py` to create a json file of an identifier-to-path dict
     - example: {
         'HH001545_0001': { 'path': '/path/to/HH001545_0001_mods.xml'},
         etc.
@@ -20,6 +20,7 @@
     - this will be the initial version of the essential source-data to update a mods-record:
         - the filepath to the new-mods
         - the pid
+    - the file will be saved to '../support_stuff/update_hhoag_orgs_support_stuff/02b_hhoag_mods_paths.json' -- so not within the repo, since it contains paths.
 
 - run the future `03_acertain_pids.py` to create a json file ("data_files/03_mods_paths_and_pids.json").
     - example: {
