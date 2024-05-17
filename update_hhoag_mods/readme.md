@@ -1,3 +1,5 @@
+## Purpose to update bdr mods files with new mods files
+
 ## Steps
 
 - note: initially i'll do this step by step; eventually it'd be good to have one script that can be passed orgs (or a path to a text-file of orgs), which would perform all the steps.
@@ -32,3 +34,7 @@
         - more code: use a tracker similar to the pipeline's tracker.
 
 - run the code.
+
+- future:
+    - make this into a single-script, as noted in the first step-note.
+    - call the actual update-mods code as a binary (test load/time/memory performance)
