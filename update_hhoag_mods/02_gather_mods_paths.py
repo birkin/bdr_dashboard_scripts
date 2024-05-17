@@ -38,24 +38,28 @@ def make_id_dict( mods_files: list ) -> dict:
     """ Returns dict with hall-hoag-ids as keys and mods-filepaths as values.
         Called by start_id_dict() """
     id_dict = {}
-    for mods_file in mods_files:
-        mods_file_str = str( mods_file )
-        hh_id = mods_file_str.split('/')[-1].split('_')[0]
-        id_dict[ hh_id ] = mods_file_str
-    log.debug( f'id_dict[0:3], ``{pprint.pformat(id_dict[0:3])}``' )
+    for mods_filepath in mods_files:
+        item_dict = { 'path:': str(mods_filepath) }
+        mods_file_str = str( mods_filepath )
+        hh_id = parse_id( mods_filepath )
+        id_dict[ hh_id ] = item_dict
+    log.debug( f'id_dict, partial, ``{pprint.pformat(id_dict)[0:500]}...``' )
     return id_dict
+
 
 def parse_id( mods_file: pathlib.Path ) -> str:
     """ Returns hall-hoag-id from mods-filepath.
         Called by make_id_dict() 
-    >>> mods_file = pathlib.Path( '/path/to/HH123456_0001_mods.xml' )
-    >>> parse_id( mods_file )
+    >>> mods_filepath = pathlib.Path( '/path/to/HH123456.mods.xml' )  # org
+    >>> parse_id( mods_filepath )
     'HH123456'
+    >>> mods_filepath = pathlib.Path( '/path/to/HH123456_0001.mods.xml' )  # item
+    >>> parse_id( mods_filepath )
+    'HH123456_0001'
     """
-    mods_file_str = str( mods_file )
-    hh_id = mods_file_str.split('/')[-1].split('_')[0]
-    log.debug( f'path, ``{mods_file_str}``; hh_id, ``{hh_id}``' )
-    return hh_id
+    filename_a: str = mods_file.stem  # removes .xml but still contains .mods
+    filename_b: str = filename_a.split('.')[0]  # removes .mods    
+    return filename_b
 
 
 def make_mods_paths_list( directory_path: pathlib.Path ) -> list:
