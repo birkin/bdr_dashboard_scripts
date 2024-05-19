@@ -29,7 +29,7 @@ logging.basicConfig(
 log = logging.getLogger( __name__ )
 
 
-## helpers start ----------------------------------------------------
+## helpers start (manager function is after helpers) ----------------
 
 
 def validate_arg_paths( mods_directory_path: pathlib.Path, tracker_directory_path: pathlib.Path ) -> None:
