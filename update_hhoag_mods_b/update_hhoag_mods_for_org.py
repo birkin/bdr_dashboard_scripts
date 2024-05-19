@@ -125,6 +125,13 @@ def merge_api_data_into_org_data( org_data: dict, api_data: list ) -> dict:
             org_data[ hh_id ]['pid'] = api_item['pid']
     log.debug( f'updated org_data, partial, ``{pprint.pformat(org_data)[0:1000]}...``' )
     # log.debug( f'org_data, ``{pprint.pformat(org_data)}``' )
+    ## confirm all items have pid -----------------------------------
+    ids_missing_pids = []
+    for hh_id, item_dict in org_data.items():
+        if 'pid' not in item_dict:
+            ids_missing_pids.append( hh_id )
+    if ids_missing_pids:
+        raise Exception( f'Error: these items are missing pids: {ids_missing_pids}' )
     return org_data
     
 
@@ -143,7 +150,10 @@ def manage_org_mods_update( orgs_list: list, mods_directory_path: pathlib.Path, 
         org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
-        # log.debug( f'org_data keys, ``{org_data.keys()}``' )
+        for hh_id, item_dict in org_data.items():
+            item_already_processed: bool = check_item_in_tracker( hh_id, tracker_directory_path ) 
+            if item_already_processed:
+                continue  
     return
 
 
