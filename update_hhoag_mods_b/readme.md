@@ -30,9 +30,9 @@
 - for each entry in the org-data-dict, 
 	- check the tracker to see if the entry has already been processed.
 	- call the update-single-mods script (which takes a path and a pid) 
-	- write tracker file named 'HH123456_mods_updated.json' or 'HH123456_0001_mods_updated.json'
+	- write tracker file named 'HH123456__mods_updated.json' or 'HH123456_0001__mods_updated.json'
 		- make contents be {datetime: x, time-taken: x}
-- after the last entry-mods has been updated, write tracker file named ''HH123456_whole_org_updated.json'
+- after the last entry-mods has been updated, write tracker file named 'HH123456__whole_org_updated.json'
 	- make contents be {datetime: x, time-taken: x}
 
 ---
