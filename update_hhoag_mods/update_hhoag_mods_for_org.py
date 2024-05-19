@@ -3,7 +3,7 @@ Example usage:
     $ python ./update_hhoag_mods.py --org_list "fooA,fooB" --mods_dir "bar" --tracker_dir "baz" 
 
 Note that one of the functions has a doctest. All doctests can be run with the following command:
-`python -m doctest ./update_hhoag_mods_b/update_hhoag_mods_for_org.py -v`
+`python -m doctest ./update_hhoag_mods/update_hhoag_mods_for_org.py -v`
 
 """
 
