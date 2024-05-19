@@ -174,7 +174,7 @@ def merge_api_data_into_org_data( org_data: dict, api_data: list ) -> dict:
         if 'pid' not in item_dict:
             ids_missing_pids.append( hh_id )
     if ids_missing_pids:
-        raise Exception( f'Error: these items are missing pids: {ids_missing_pids}' )
+        log.warning( f'WARNING: these items are missing pids: ``{ids_missing_pids}``' )
     return org_data
     
 
@@ -203,6 +203,7 @@ def manage_org_mods_update( orgs_list: list,
     """ Manager function
         Called by dundermain. """
     for org in orgs_list:
+        log.info( f'\n\nprocessing org, ``{org}``' )
         org_tracker_filepath: pathlib.Path = get_org_tracker_filepath( org, tracker_directory_path )
         org_already_processed: bool = check_tracker( org_tracker_filepath )
         if org_already_processed:
@@ -217,6 +218,7 @@ def manage_org_mods_update( orgs_list: list,
                 continue  
             # response_obj = hit_api( item_dict['path'], item_dict['pid'] )
             # update_tracker( item_tracker_filepath, response_obj )
+        log.info( f'finished processing org, ``{org}``' )
     return
 
 
@@ -241,4 +243,4 @@ if __name__ == '__main__':
     ## get to work --------------------------------------------------
     manage_org_mods_update( orgs_list, mods_directory_path, tracker_directory_path )
     elapsed_time = time.monotonic() - start_time
-    log.info( f'elapsed time, ``{elapsed_time:.2f}`` seconds' )
+    log.info( f'total elapsed time for all orgs, ``{elapsed_time:.2f}`` seconds' )
