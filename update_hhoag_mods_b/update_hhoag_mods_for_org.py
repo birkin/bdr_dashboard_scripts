@@ -8,6 +8,7 @@ Note that one of the functions has a doctest. All doctests can be run with the f
 """
 
 import argparse, json, logging, os, pathlib, pprint, sys, time
+import requests
 
 
 ## setup logging ----------------------------------------------------
@@ -61,7 +62,7 @@ def check_org_in_tracker( org_tracker_filepath: pathlib.Path ) -> bool:
 
 
 def get_filepath_data( org: str, mods_directory_path: pathlib.Path ) -> dict:
-    """ Gets org data.
+    """ Creates initial org-data dict and populates it with filepath info.
         Called by manage_org_mods_update(). """
     org_data = {}
     mods_paths = list( mods_directory_path.rglob('*mods.xml') )
@@ -77,7 +78,7 @@ def get_filepath_data( org: str, mods_directory_path: pathlib.Path ) -> dict:
 
 def parse_id( mods_file: pathlib.Path ) -> str:
     """ Returns hall-hoag-id from mods-filepath.
-        Called by make_id_dict() 
+        Called by get_filepath_data() 
     >>> mods_filepath = pathlib.Path( '/path/to/HH123456.mods.xml' )  # org
     >>> parse_id( mods_filepath )
     'HH123456'
@@ -88,6 +89,31 @@ def parse_id( mods_file: pathlib.Path ) -> str:
     filename_a: str = mods_file.stem  # removes .xml but still contains .mods
     filename_b: str = filename_a.split('.')[0]  # removes .mods    
     return filename_b
+
+
+def get_org_data_via_api( org: str ) -> list:
+    """ Gets org data via BDR public API.
+        Called by manage_org_mods_update(). """
+    api_data = []
+    start = 0
+    rows = 500    
+    while True:
+        org_data_url_pattern = f'https://repository.library.brown.edu/api/search/?q=mods_id_local_ssim:*{org}*&fl=mods_id_local_ssim,primary_title,pid&rows={rows}&start={start}'
+        log.debug( f'org_data_url_pattern, ``{org_data_url_pattern}``' )
+        response = requests.get(org_data_url_pattern)
+        response_data = response.json()
+        docs: list = response_data['response']['docs']   
+        api_data.extend( docs )            
+        if len( response_data['response']['docs'] ) < rows:  # means that last append was the last batch
+            log.debug( f'breaking loop' )
+            break
+        else:
+            log.debug( f'increasing rows from {rows} to {rows+500}' )
+            start += rows
+    log.debug( f'api_data, partial, ``{pprint.pformat(api_data)[0:1000]}...``' )
+    # log.debug( f'api_data, ``{pprint.pformat(api_data)}``' )
+    return api_data
+    
 
 ## helpers end ------------------------------------------------------
 
@@ -102,7 +128,7 @@ def manage_org_mods_update( orgs_list: list, mods_directory_path: pathlib.Path, 
         if org_already_processed:
             continue
         org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
-
+        api_data: list = get_org_data_via_api( org )
     return
 
 
