@@ -22,7 +22,7 @@
         - the pid
     - the file will be saved to '../support_stuff/update_hhoag_orgs_support_stuff/02b_hhoag_mods_paths.json' -- so not within the repo, since it contains paths.
 
-- run the future `03_acertain_pids.py` to create a json file ("data_files/03_mods_paths_and_pids.json").
+- run the future `03_acertain_pids.py` to create a json file with pids ("data_files/03_mods_paths_and_pids.json").
     - example: {
         'HH001545_0001': { 'path': '/path/to/HH001545_0001_mods.xml', 'pid: 'the_pid' },
         etc.
