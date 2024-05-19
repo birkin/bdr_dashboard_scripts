@@ -1,10 +1,15 @@
 """
+Updates all org-mods and item-mods for given orgs.
+Checks and updates tracker files.
+
 Example usage:
+- minimum required:
     $ python ./update_hhoag_mods.py --org_list "fooA,fooB" --mods_dir "bar" --tracker_dir "baz" 
+- to check envars and quit:
+    $ python ./update_hhoag_mods.py --org_list "fooA,fooB" --mods_dir "bar" --tracker_dir "baz" --check_envars "True"
 
 Note that some of the functions contain doctests. All doctests can be run with the following command:
 `python -m doctest ./update_hhoag_mods/update_hhoag_mods_for_org.py -v`
-
 """
 
 import argparse, collections, json, logging, os, pathlib, pprint, sys, time
@@ -15,21 +20,31 @@ from dotenv import load_dotenv, find_dotenv
 ## load envars
 load_dotenv( find_dotenv(raise_error_if_not_found=True) )
 BDR_API_ROOT = os.environ[ 'UHHB__BDR_API_URL_ROOT' ]
+LGLVL: str = os.environ.get( 'HHDICT__LOGLEVEL', 'DEBUG' )
 
 
 ## setup logging ----------------------------------------------------
-lglvl: str = os.environ.get( 'HHDICT__LOGLEVEL', 'DEBUG' )
 lglvldct = {
     'DEBUG': logging.DEBUG,
     'INFO': logging.INFO }
 logging.basicConfig(
-    level=lglvldct[lglvl],  # assigns the level-object to the level-key loaded from the envar
+    level=lglvldct[LGLVL],  # assigns the level-object to the level-key loaded from the envar
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
     datefmt='%d/%b/%Y %H:%M:%S' )
 log = logging.getLogger( __name__ )
 
 
 ## helpers start (manager function is after helpers) ----------------
+
+def config_parser() -> argparse.ArgumentParser:
+    """ Configures parser.
+        Called by dundermain. """
+    parser = argparse.ArgumentParser(description='Recursively finds JSON files in specified directory.')
+    parser.add_argument( '--org_list', required=True, help='takes orgs to process; example "HH123456" or "HH123456,HH654321"' )
+    parser.add_argument( '--mods_dir', required=True, help='takes path to directory containing pre-made org-mods and item-mods files' )
+    parser.add_argument( '--tracker_dir', required=True, help='takes path to directory containing the tracker files' )
+    parser.add_argument( '--check_envars', required=False, help='if "True", checks envars and exits' )
+    return parser
 
 
 def validate_arg_paths( mods_directory_path: pathlib.Path, tracker_directory_path: pathlib.Path ) -> None:
@@ -44,6 +59,17 @@ def validate_arg_paths( mods_directory_path: pathlib.Path, tracker_directory_pat
     return
 
 
+def display_envars() -> None:
+    """ Displays envars.
+        Called by dundermain. """
+    print( '\n')
+    print( 'Envars:' )
+    print( f'- BDR_API_ROOT, ``{BDR_API_ROOT}``' )
+    print( f'- LGLVL, ``{LGLVL}``' )
+    print( '\n' )
+    sys.exit( 0 )
+    return
+
 def get_org_tracker_filepath( org: str, tracker_directory_path: pathlib.Path ) -> pathlib.Path:
     """ Gets the org's tracker file path.
         Called by manage_org_mods_update(). 
@@ -56,15 +82,6 @@ def get_org_tracker_filepath( org: str, tracker_directory_path: pathlib.Path ) -
     log.debug(f'org_tracker_filepath, ``{org_tracker_filepath}``')
     return org_tracker_filepath
 
-
-# def check_org_in_tracker( org_tracker_filepath: pathlib.Path ) -> bool:
-#     """ Checks if org is already in tracker file.
-#         Called by manage_org_mods_update(). """
-#     return_val = False
-#     if org_tracker_filepath.exists():
-#         return_val = True
-#     log.debug( f'return_val `{return_val}`' )
-#     return return_val
 
 def check_tracker( tracker_filepath: pathlib.Path ) -> bool:
     """ Checks if org or item is already in tracker file.
@@ -189,8 +206,8 @@ def manage_org_mods_update( orgs_list: list,
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
-            response_obj = hit_api( item_dict['path'], item_dict['pid'] )
-            update_tracker( item_tracker_filepath, response_obj )
+            # response_obj = hit_api( item_dict['path'], item_dict['pid'] )
+            # update_tracker( item_tracker_filepath, response_obj )
     return
 
 
@@ -200,17 +217,18 @@ if __name__ == '__main__':
     assert pathlib.Path.cwd().name == 'bdr_scripts_public', f"Error: wrong directory; cd to the `bdr_sripts_public` directory and try again."
     start_time = time.monotonic()
     ## prep args ----------------------------------------------------
-    parser = argparse.ArgumentParser(description='Recursively finds JSON files in specified directory.')
-    parser.add_argument( '--org_list', required=True, help='orgs to process; example "HH123456" or "HH123456,HH654321"' )
-    parser.add_argument( '--mods_dir', required=True, help='path to directory containing pre-made org-mods and item-mods files' )
-    parser.add_argument( '--tracker_dir', required=True, help='path to directory containing the tracker files' )
-    args = parser.parse_args()
+    parser: argparse.ArgumentParser = config_parser()
     ## grab args ----------------------------------------------------
+    args: argparse.Namespace = parser.parse_args()
     orgs_list = [ ', '.join( args.org_list.split(',') ) ]
-    mods_directory_path = pathlib.Path(args.mods_dir)
-    tracker_directory_path = pathlib.Path(args.tracker_dir)
+    mods_directory_path = pathlib.Path( args.mods_dir )
+    tracker_directory_path = pathlib.Path( args.tracker_dir )
+    run_envar_check: str = args.check_envars
     ## validate path-------------------------------------------------
     validate_arg_paths( mods_directory_path, tracker_directory_path )
+    ## check envars -------------------------------------------------
+    if run_envar_check and run_envar_check.lower() == 'true':
+        display_envars()
     ## get to work --------------------------------------------------
     manage_org_mods_update( orgs_list, mods_directory_path, tracker_directory_path )
     elapsed_time = time.monotonic() - start_time
