@@ -57,11 +57,20 @@ def get_org_tracker_filepath( org: str, tracker_directory_path: pathlib.Path ) -
     return org_tracker_filepath
 
 
-def check_org_in_tracker( org_tracker_filepath: pathlib.Path ) -> bool:
-    """ Checks if org is already in tracker file.
+# def check_org_in_tracker( org_tracker_filepath: pathlib.Path ) -> bool:
+#     """ Checks if org is already in tracker file.
+#         Called by manage_org_mods_update(). """
+#     return_val = False
+#     if org_tracker_filepath.exists():
+#         return_val = True
+#     log.debug( f'return_val `{return_val}`' )
+#     return return_val
+
+def check_tracker( tracker_filepath: pathlib.Path ) -> bool:
+    """ Checks if org or item is already in tracker file.
         Called by manage_org_mods_update(). """
     return_val = False
-    if org_tracker_filepath.exists():
+    if tracker_filepath.exists():
         return_val = True
     log.debug( f'return_val `{return_val}`' )
     return return_val
@@ -157,18 +166,19 @@ def get_item_tracker_filepath( hh_id: str, tracker_directory_path: pathlib.Path 
     log.debug(f'item_tracker_filepath, ``{item_tracker_filepath}``')
     return item_tracker_filepath
 
+
 ## helpers end ------------------------------------------------------
 
 
 ## manager ----------------------------------------------------------
 def manage_org_mods_update( orgs_list: list, 
-                           mods_directory_path: pathlib.Path, 
-                           tracker_directory_path: pathlib.Path ) -> None:
+                            mods_directory_path: pathlib.Path, 
+                            tracker_directory_path: pathlib.Path ) -> None:
     """ Manager function
         Called by dundermain. """
     for org in orgs_list:
         org_tracker_filepath: pathlib.Path = get_org_tracker_filepath( org, tracker_directory_path )
-        org_already_processed: bool = check_org_in_tracker( org_tracker_filepath )
+        org_already_processed: bool = check_tracker( org_tracker_filepath )
         if org_already_processed:
             continue
         org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
@@ -176,9 +186,11 @@ def manage_org_mods_update( orgs_list: list,
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
         for hh_id, item_dict in org_data.items():
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
-            item_already_processed: bool = check_item_in_tracker( item_tracker_filepath ) 
+            item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
+            response_obj = hit_api( item_dict['path'], item_dict['pid'] )
+            update_tracker( item_tracker_filepath, response_obj )
     return
 
 
