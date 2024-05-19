@@ -9,6 +9,12 @@ Note that one of the functions has a doctest. All doctests can be run with the f
 
 import argparse, collections, json, logging, os, pathlib, pprint, sys, time
 import requests
+from dotenv import load_dotenv, find_dotenv
+
+
+## load envars
+load_dotenv( find_dotenv(raise_error_if_not_found=True) )
+BDR_API_ROOT = os.environ[ 'UHHB__BDR_API_URL_ROOT' ]
 
 
 ## setup logging ----------------------------------------------------
@@ -97,11 +103,13 @@ def get_org_data_via_api( org: str ) -> list:
         Called by manage_org_mods_update(). """
     api_data = []
     start = 0
-    rows = 500    
+    rows = 500
+    org_data_url_stable_pattern = f'{BDR_API_ROOT}/search/?q=mods_id_local_ssim:*{org}*&fl=mods_id_local_ssim,primary_title,pid&rows={rows}'
+    log.debug( f'org_data_url_stable_pattern, ``{org_data_url_stable_pattern}``' )
     while True:
-        org_data_url_pattern = f'https://repository.library.brown.edu/api/search/?q=mods_id_local_ssim:*{org}*&fl=mods_id_local_ssim,primary_title,pid&rows={rows}&start={start}'
-        log.debug( f'org_data_url_pattern, ``{org_data_url_pattern}``' )
-        response = requests.get(org_data_url_pattern)
+        org_data_url = f'{org_data_url_stable_pattern}&start={start}'
+        log.debug( f'org_data_url, ``{org_data_url}``' )
+        response = requests.get(org_data_url)
         response_data = response.json()
         docs: list = response_data['response']['docs']   
         api_data.extend( docs )            
