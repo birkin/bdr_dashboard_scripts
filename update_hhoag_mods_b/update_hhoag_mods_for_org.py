@@ -7,7 +7,7 @@ Note that one of the functions has a doctest. All doctests can be run with the f
 
 """
 
-import argparse, json, logging, os, pathlib, pprint, sys, time
+import argparse, collections, json, logging, os, pathlib, pprint, sys, time
 import requests
 
 
@@ -72,8 +72,9 @@ def get_filepath_data( org: str, mods_directory_path: pathlib.Path ) -> dict:
             item_dict = { 'path:': str(mods_filepath) }
             hh_id: str = parse_id( mods_filepath )
             org_data[ hh_id ] = item_dict
-    log.debug( f'org_data, partial, ``{pprint.pformat(org_data)[0:1000]}...``' )
-    return org_data
+    sorted_org_data = collections.OrderedDict( sorted(org_data.items()) )  # doesn't _need_ to be sorted, but it makes debugging a bit easier
+    log.debug( f'org_data, partial, ``{pprint.pformat(sorted_org_data)[0:1000]}...``' )
+    return sorted_org_data
 
 
 def parse_id( mods_file: pathlib.Path ) -> str:
@@ -113,6 +114,18 @@ def get_org_data_via_api( org: str ) -> list:
     log.debug( f'api_data, partial, ``{pprint.pformat(api_data)[0:1000]}...``' )
     # log.debug( f'api_data, ``{pprint.pformat(api_data)}``' )
     return api_data
+
+
+def merge_api_data_into_org_data( org_data: dict, api_data: list ) -> dict:
+    """ Merges API data into org data.
+        Called by manage_org_mods_update(). """
+    for api_item in api_data:
+        hh_id = api_item['mods_id_local_ssim'][0]
+        if hh_id in org_data:
+            org_data[ hh_id ]['pid'] = api_item['pid']
+    log.debug( f'updated org_data, partial, ``{pprint.pformat(org_data)[0:1000]}...``' )
+    # log.debug( f'org_data, ``{pprint.pformat(org_data)}``' )
+    return org_data
     
 
 ## helpers end ------------------------------------------------------
@@ -129,6 +142,8 @@ def manage_org_mods_update( orgs_list: list, mods_directory_path: pathlib.Path, 
             continue
         org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
         api_data: list = get_org_data_via_api( org )
+        org_data: dict = merge_api_data_into_org_data( org_data, api_data )
+        # log.debug( f'org_data keys, ``{org_data.keys()}``' )
     return
 
 
