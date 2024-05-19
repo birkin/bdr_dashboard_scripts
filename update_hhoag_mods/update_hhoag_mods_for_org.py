@@ -143,11 +143,27 @@ def merge_api_data_into_org_data( org_data: dict, api_data: list ) -> dict:
     return org_data
     
 
+def get_item_tracker_filepath( hh_id: str, tracker_directory_path: pathlib.Path ) -> pathlib.Path:
+    """ Gets the item's tracker file path.
+        Called by manage_org_mods_update(). 
+    Doctest:
+    >>> get_item_tracker_filepath( 'HH123456', pathlib.Path('/path/to/foo') )    
+    PosixPath('/path/to/foo/HH12/3456/HH123456__item_updated.json')
+    >>> get_item_tracker_filepath( 'HH123456_0001', pathlib.Path('/path/to/foo') )    
+    PosixPath('/path/to/foo/HH12/3456/HH123456_0001__item_updated.json')
+    """
+    part_a, part_b = hh_id[:4], hh_id[4:8]
+    item_tracker_filepath = tracker_directory_path / part_a / part_b / f'{hh_id}__item_updated.json'  # pathlib way of joining paths
+    log.debug(f'item_tracker_filepath, ``{item_tracker_filepath}``')
+    return item_tracker_filepath
+
 ## helpers end ------------------------------------------------------
 
 
 ## manager ----------------------------------------------------------
-def manage_org_mods_update( orgs_list: list, mods_directory_path: pathlib.Path, tracker_directory_path: pathlib.Path ) -> None:
+def manage_org_mods_update( orgs_list: list, 
+                           mods_directory_path: pathlib.Path, 
+                           tracker_directory_path: pathlib.Path ) -> None:
     """ Manager function
         Called by dundermain. """
     for org in orgs_list:
@@ -159,7 +175,8 @@ def manage_org_mods_update( orgs_list: list, mods_directory_path: pathlib.Path, 
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
         for hh_id, item_dict in org_data.items():
-            item_already_processed: bool = check_item_in_tracker( hh_id, tracker_directory_path ) 
+            item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
+            item_already_processed: bool = check_item_in_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
     return
