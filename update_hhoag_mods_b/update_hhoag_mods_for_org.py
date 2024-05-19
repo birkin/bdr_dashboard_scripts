@@ -18,11 +18,40 @@ logging.basicConfig(
 log = logging.getLogger( __name__ )
 
 
+## helpers ----------------------------------------------------------
+
+
+def validate_arg_paths( mods_directory_path: pathlib.Path, tracker_directory_path: pathlib.Path ) -> None:
+    """ Validates argument paths.
+        Called by dundermain. """
+    if not mods_directory_path.exists():
+        print( f'Error: The path {mods_directory_path} does not exist.', file=sys.stderr )
+        sys.exit(1)
+    if not tracker_directory_path.is_dir():
+        print( f'Error: The path {tracker_directory_path} is not a directory.', file=sys.stderr )
+        sys.exit(1)
+    return
+
+
 ## manager ----------------------------------------------------------
 def manage_org_mods_update( orgs_list: list, mods_directory_path: pathlib.Path, tracker_directory_path: pathlib.Path ) -> None:
     """ Manager function
         Called by dundermain. """
-    pass
+    for org in orgs_list:
+        org_already_processed: bool = check_org_in_tracker( org, tracker_directory_path )
+    return
+
+
+def check_org_in_tracker( org: str, tracker_directory_path: pathlib.Path ) -> bool:
+    """ Checks if org is already in tracker file.
+        Called by manage_org_mods_update(). """
+    tracker_file_path = tracker_directory_path.joinpath( f'{org}_tracker.json' )
+    if tracker_file_path.exists():
+        log.debug( f'org `{org}` already in tracker' )
+        return True
+    else:
+        log.debug( f'org `{org}` not in tracker' )
+        return False
 
 
 ## dunndermain ------------------------------------------------------
@@ -41,12 +70,7 @@ if __name__ == '__main__':
     mods_directory_path = pathlib.Path(args.mods_dir)
     tracker_directory_path = pathlib.Path(args.tracker_dir)
     ## validate path-------------------------------------------------
-    if not mods_directory_path.exists():
-        print( f'Error: The path {mods_directory_path} does not exist.', file=sys.stderr )
-        sys.exit(1)
-    if not tracker_directory_path.is_dir():
-        print( f'Error: The path {tracker_directory_path} is not a directory.', file=sys.stderr )
-        sys.exit(1)
+    validate_arg_paths( mods_directory_path, tracker_directory_path )
     ## get to work --------------------------------------------------
     manage_org_mods_update( orgs_list, mods_directory_path, tracker_directory_path )
     elapsed_time = time.monotonic() - start_time
