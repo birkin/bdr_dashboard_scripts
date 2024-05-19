@@ -10,6 +10,14 @@ Example usage:
 
 Note that some of the functions contain doctests. All doctests can be run with the following command:
 `python -m doctest ./update_hhoag_mods/update_hhoag_mods_for_org.py -v`
+
+Optional TODOs:
+- Move the mods-dir-path and tracker-dir-path to envars. Makes more sense for CLI args to be things that change.
+
+Code structure:
+- dundermain at bottom.
+- manager function at just above it.
+- helper functions start at top in order of use.
 """
 
 import argparse, collections, json, logging, os, pathlib, pprint, sys, time
@@ -17,10 +25,10 @@ import requests
 from dotenv import load_dotenv, find_dotenv
 
 
-## load envars
+## load envars -----------------------------------------------------
 load_dotenv( find_dotenv(raise_error_if_not_found=True) )
-BDR_API_ROOT = os.environ[ 'UHHB__BDR_API_URL_ROOT' ]
-LGLVL: str = os.environ.get( 'HHDICT__LOGLEVEL', 'DEBUG' )
+BDR_API_ROOT = os.environ[ 'UHHM__BDR_API_URL_ROOT' ]  # UHHM for "update hall-hoag mods"
+LGLVL: str = os.environ.get( 'UHHM__LOGLEVEL', 'DEBUG' )
 
 
 ## setup logging ----------------------------------------------------
@@ -69,6 +77,7 @@ def display_envars() -> None:
     print( '\n' )
     sys.exit( 0 )
     return
+
 
 def get_org_tracker_filepath( org: str, tracker_directory_path: pathlib.Path ) -> pathlib.Path:
     """ Gets the org's tracker file path.
