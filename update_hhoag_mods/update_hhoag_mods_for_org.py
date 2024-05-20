@@ -234,6 +234,24 @@ def call_api( path: str, pid: str ) -> str:
     return return_data
 
 
+def update_item_tracker( item_tracker_filepath: pathlib.Path, err: str ) -> None:
+    """ Updates the item's tracker file.
+        - If there's no error, the current filename will be used, eg, `HH001545_0001__item_updated.json` and will be empty.
+        - If there's an error, the file-name will be renamed, eg, `HH001545_0001__problem.json` and will contain the error.
+        Called by manage_org_mods_update(). """
+    log.info( f'item_tracker_filepath, ``{item_tracker_filepath}``' )
+    log.info( f'err, ``{err}``' )
+    if not err:
+        with open( item_tracker_filepath, 'w' ) as f:
+            f.write( 'all good' + '\n' )
+    else:
+        new_filename = item_tracker_filepath.stem + '__problem.json'
+        new_filepath = item_tracker_filepath.parent / new_filename
+        log.info( f'new_filepath, ``{new_filepath}``' )
+        with open( new_filepath, 'w' ) as f:
+            f.write( err + '\n' )
+    return
+
 ## helpers end ------------------------------------------------------
 
 
@@ -256,13 +274,13 @@ def manage_org_mods_update( orgs_list: list,
             if i > 1:  # for testing, will process the org-mods and first item-mods
                 break
             path: str = item_dict['path']; pid: str = item_dict['pid']
-            log.info( f'\n\nprocessing ``{hh_id}-{pid}``' )
+            log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
             err: str = call_api( path, pid )
-            # update_tracker( item_tracker_filepath, response_obj )
+            update_item_tracker( item_tracker_filepath, err )
         log.info( f'finished processing org, ``{org}``' )
     return
 
