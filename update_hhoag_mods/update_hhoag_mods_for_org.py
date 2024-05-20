@@ -124,12 +124,14 @@ def check_tracker( tracker_filepath: pathlib.Path ) -> bool:
 def get_filepath_data( org: str, mods_directory_path: pathlib.Path ) -> dict:
     """ Creates initial org-data dict and populates it with filepath info.
         Called by manage_org_mods_update(). """
+    # log.info( f'mods_directory_path, ``{mods_directory_path}``' )
     org_data = {}
     mods_paths = list( mods_directory_path.rglob('*mods.xml') )
     org_data = {}
     for mods_filepath in mods_paths:
         if org in mods_filepath.name:
-            item_dict = { 'path': str(mods_filepath) }
+            # item_dict = { 'path': str(mods_filepath) }
+            item_dict = { 'path': mods_filepath }
             hh_id: str = parse_id( mods_filepath )
             org_data[ hh_id ] = item_dict
     sorted_org_data = collections.OrderedDict( sorted(org_data.items()) )  # doesn't _need_ to be sorted, but it makes debugging a bit easier
@@ -219,7 +221,7 @@ def call_api( path: str, pid: str ) -> None:
     ## call the binary ---------------------------------------------
     env_copy = os.environ.copy()
     # cmd = [ BINARY_PATH, '--check_envars', 'True']; break  # will show envars perceived by the binary
-    cmd = [ BINARY_PATH, '--mods_dirpath', path, '--bdr_pid', pid ]
+    cmd = [ BINARY_PATH, '--mods_filepath', path, '--bdr_pid', pid ]
     log.info( f'cmd, ``{cmd}``' )
     result = subprocess.run( cmd, env=env_copy, capture_output=True, text=True )
     log.info( f'result, ``{result}``' )
@@ -248,7 +250,7 @@ def manage_org_mods_update( orgs_list: list,
             if i > 1:  # for testing, will process the org-mods and first item-mods
                 break
             path: str = item_dict['path']; pid: str = item_dict['pid']
-            log.info( f'processing ``{hh_id}-{pid}``' )
+            log.info( f'\n\nprocessing ``{hh_id}-{pid}``' )
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
@@ -269,8 +271,9 @@ if __name__ == '__main__':
     ## grab args ----------------------------------------------------
     args: argparse.Namespace = parser.parse_args()
     orgs_list = [ ', '.join( args.org_list.split(',') ) ]
-    mods_directory_path = pathlib.Path( args.mods_dir )
-    tracker_directory_path = pathlib.Path( args.tracker_dir )
+    # mods_directory_path = pathlib.Path( args.mods_dir )
+    mods_directory_path = pathlib.Path( args.mods_dir ).resolve()  # if a relative-path is submitted, this will resolve it to an absolute path
+    tracker_directory_path = pathlib.Path( args.tracker_dir ).resolve()
     run_envar_check: str = args.check_envars
     ## validate path-------------------------------------------------
     validate_arg_paths( mods_directory_path, tracker_directory_path )
