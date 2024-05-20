@@ -214,18 +214,24 @@ def get_item_tracker_filepath( hh_id: str, tracker_directory_path: pathlib.Path 
     return item_tracker_filepath
 
 
-def call_api( path: str, pid: str ) -> None:
+def call_api( path: str, pid: str ) -> str:
     """ Calls the API.
         Called by manage_org_mods_update(). """
-    log.info( f'path, ``{path}``; pid, ``{pid}``' )
+    log.debug( f'path, ``{path}``; pid, ``{pid}``' )
     ## call the binary ---------------------------------------------
     env_copy = os.environ.copy()
     # cmd = [ BINARY_PATH, '--check_envars', 'True']; break  # will show envars perceived by the binary
     cmd = [ BINARY_PATH, '--mods_filepath', path, '--bdr_pid', pid ]
-    log.info( f'cmd, ``{cmd}``' )
-    result = subprocess.run( cmd, env=env_copy, capture_output=True, text=True )
-    log.info( f'result, ``{result}``' )
-    return
+    log.debug( f'cmd, ``{cmd}``' )
+    result: subprocess.CompletedProcess = subprocess.run( cmd, env=env_copy, capture_output=True, text=True )
+    log.debug( f'result, ``{result}``' )
+    ## log and return errors ----------------------------------------
+    return_data = ''
+    if result.stderr:
+        log.warning( f'WARNING, stderr returned, ``{result.stderr}``' )
+        return_data = result.stderr
+    log.debug( f'return_data, ``{return_data}``' )
+    return return_data
 
 
 ## helpers end ------------------------------------------------------
@@ -255,7 +261,7 @@ def manage_org_mods_update( orgs_list: list,
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
-            result = call_api( path, pid )
+            err: str = call_api( path, pid )
             # update_tracker( item_tracker_filepath, response_obj )
         log.info( f'finished processing org, ``{org}``' )
     return
