@@ -274,11 +274,65 @@ def update_org_tracker( org_tracker_filepath: pathlib.Path ) -> None:
         f.write( msg )
     return
 
+# def process_item_loop( 
+#         org_data: dict, 
+#         tracker_directory_path: pathlib.Path, 
+#         org_tracker_filepath: pathlib.Path ) -> None:
+#     for i, (hh_id, item_dict) in enumerate( org_data.items() ):
+#         # if i > 2:  # for testing, will process the org-mods and first item-mods
+#         #     break
+#         log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
+#         ## already processed? ---------------------------------------
+#         item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
+#         item_already_processed: bool = check_tracker( item_tracker_filepath ) 
+#         if item_already_processed:
+#             continue  
+#         ## process item ---------------------------------------------
+#         mods_path: str = item_dict['path']
+#         try:
+#             pid: str = item_dict['pid']
+#         except KeyError:
+#             err_msg = f'WARNING: pid not found for item ``{hh_id}``'
+#             log.warning( err_msg )
+#             update_item_tracker( item_tracker_filepath, err_msg )
+#             continue
+#         err: str = call_api( mods_path, pid )  # err generally ''
+#         update_item_tracker( item_tracker_filepath, err )  # updates tracker differently if there's an error
+#     return
+
+
+
+def process_item_loop( 
+        org_data: dict, 
+        tracker_directory_path: pathlib.Path, 
+        org_tracker_filepath: pathlib.Path ) -> None:
+    for i, (hh_id, item_dict) in enumerate( org_data.items() ):
+        # if i > 2:  # for testing, will process the org-mods and first item-mods
+        #     break
+        mods_path: str = item_dict['path']
+        item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
+        try:
+            pid: str = item_dict['pid']
+        except KeyError:
+            err_msg = f'WARNING: pid not found for item ``{hh_id}``'
+            log.warning( '\n' + err_msg + '\n' )
+            update_item_tracker( item_tracker_filepath, err_msg )
+            continue
+        log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
+        ## already processed? ---------------------------------------
+        item_already_processed: bool = check_tracker( item_tracker_filepath ) 
+        if item_already_processed:
+            continue  
+        ## process item ---------------------------------------------
+        err: str = call_api( mods_path, pid )  # err generally ''
+        update_item_tracker( item_tracker_filepath, err )  # updates tracker differently if there's an error
+    return
+
 
 ## helpers end ------------------------------------------------------
 
 
-## manager ----------------------------------------------------------
+## manager  ---------------------------------------------------------
 def manage_org_mods_update( orgs_list: list, 
                             mods_directory_path: pathlib.Path, 
                             tracker_directory_path: pathlib.Path ) -> None:
@@ -293,21 +347,10 @@ def manage_org_mods_update( orgs_list: list,
         org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
-        for i, (hh_id, item_dict) in enumerate( org_data.items() ):
-            # if i > 2:  # for testing, will process the org-mods and first item-mods
-            #     break
-            path: str = item_dict['path']; pid: str = item_dict['pid']
-            log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
-            item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
-            item_already_processed: bool = check_tracker( item_tracker_filepath ) 
-            if item_already_processed:
-                continue  
-            err: str = call_api( path, pid )
-            update_item_tracker( item_tracker_filepath, err )
+        process_item_loop( org_data, tracker_directory_path, org_tracker_filepath )
         update_org_tracker( org_tracker_filepath )
         log.info( f'finished processing org, ``{org}``' )
     return
-
 
 ## dunndermain ------------------------------------------------------
 if __name__ == '__main__':
