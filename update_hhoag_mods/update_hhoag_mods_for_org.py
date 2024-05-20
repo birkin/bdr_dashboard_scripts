@@ -129,7 +129,7 @@ def get_filepath_data( org: str, mods_directory_path: pathlib.Path ) -> dict:
     org_data = {}
     for mods_filepath in mods_paths:
         if org in mods_filepath.name:
-            item_dict = { 'path:': str(mods_filepath) }
+            item_dict = { 'path': str(mods_filepath) }
             hh_id: str = parse_id( mods_filepath )
             org_data[ hh_id ] = item_dict
     sorted_org_data = collections.OrderedDict( sorted(org_data.items()) )  # doesn't _need_ to be sorted, but it makes debugging a bit easier
@@ -212,6 +212,20 @@ def get_item_tracker_filepath( hh_id: str, tracker_directory_path: pathlib.Path 
     return item_tracker_filepath
 
 
+def call_api( path: str, pid: str ) -> None:
+    """ Calls the API.
+        Called by manage_org_mods_update(). """
+    import subprocess
+    log.info( f'path, ``{path}``; pid, ``{pid}``' )
+    ## call the binary ---------------------------------------------
+    env_copy = os.environ.copy()
+    cmd = [ BINARY_PATH, '--mods_dirpath', path, '--bdr_pid', pid ]
+    log.info( f'cmd, ``{cmd}``' )
+    # result = subprocess.run( cmd, env=env_copy, capture_output=True, text=True )
+    # log.debug( f'result, ``{result}``' )
+    return
+
+
 ## helpers end ------------------------------------------------------
 
 
@@ -231,12 +245,18 @@ def manage_org_mods_update( orgs_list: list,
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
         for i, (hh_id, item_dict) in enumerate( org_data.items() ):
-            log.info( f'processing item, ``{hh_id}``' )
+            log.info( f'processing item, ``{hh_id}-{item_dict["pid"]}``' )
+            log.info( f'item_dict, ``{pprint.pformat(item_dict)}``' )
+            log.info( f'type(item_dict), ``{type(item_dict)}``' )
+            log.info( f'item_dict.keys(), ``{item_dict.keys()}``' )
+            path = item_dict['path']
+            log.info( f'path, ``{path}``; type, ``{type(path)}``' )
+            pid = item_dict['pid']; log.info( f'pid, ``{pid}``; type, ``{type(pid)}``' )
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
-            # response_obj = hit_api( item_dict['path'], item_dict['pid'] )
+            # result = call_api( item_dict['path'], item_dict['pid'] )
             # update_tracker( item_tracker_filepath, response_obj )
             if i > 1:
                 break
