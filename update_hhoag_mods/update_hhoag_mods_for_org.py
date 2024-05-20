@@ -239,12 +239,10 @@ def update_item_tracker( item_tracker_filepath: pathlib.Path, err: str ) -> None
         - If there's no error, the current filename will be used, eg, `HH001545_0001__item_updated.json` and will be empty.
         - If there's an error, the file-name will be renamed, eg, `HH001545_0001__problem.json` and will contain the error.
         Called by manage_org_mods_update(). """
-    log.info( f'item_tracker_filepath, ``{item_tracker_filepath}``' )
-    log.info( f'err, ``{err}``' )
     ## ensure parent-paths exist ------------------------------------
     item_tracker_filepath.parent.mkdir( parents=True, exist_ok=True )
     ## write to file ------------------------------------------------
-    # err = 'foo-error'
+    # err = 'foo-error'  # for testing
     timestamp: str = time.strftime( '%Y-%m-%d %H:%M:%S', time.localtime() )
     if not err:
         msg = json.dumps( {'timestamp': timestamp, 'message': 'all_good'}, sort_keys=True, indent=2 )
@@ -254,11 +252,28 @@ def update_item_tracker( item_tracker_filepath: pathlib.Path, err: str ) -> None
         existing_filename = item_tracker_filepath.name
         new_filename = existing_filename.replace( '__item_updated.json', '__item_problem.json' )
         new_filepath = item_tracker_filepath.parent / new_filename
-        log.info( f'new_filepath, ``{new_filepath}``' )
         err_msg = json.dumps( {'timestamp': timestamp, 'err': err}, sort_keys=True, indent=2 )
         with open( new_filepath, 'w' ) as f:
             f.write( err_msg )
     return
+
+
+def update_org_tracker( org_tracker_filepath: pathlib.Path ) -> None:
+    """ Updates the org's tracker file.
+        Called by manage_org_mods_update(). 
+        TODO:
+        - store hh_id/pid errors here. 
+        - perhaps have org-elapsed time.
+        - perhaps have total-item-count and items-updated count. """
+    ## ensure parent-paths exist ------------------------------------
+    org_tracker_filepath.parent.mkdir( parents=True, exist_ok=True )
+    ## write to file ------------------------------------------------
+    timestamp: str = time.strftime( '%Y-%m-%d %H:%M:%S', time.localtime() )
+    msg = json.dumps( {'timestamp': timestamp, 'message': 'org_processed'}, sort_keys=True, indent=2 )
+    with open( org_tracker_filepath, 'w' ) as f:
+        f.write( msg )
+    return
+
 
 ## helpers end ------------------------------------------------------
 
@@ -279,7 +294,7 @@ def manage_org_mods_update( orgs_list: list,
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
         for i, (hh_id, item_dict) in enumerate( org_data.items() ):
-            if i > 1:  # for testing, will process the org-mods and first item-mods
+            if i > 2:  # for testing, will process the org-mods and first item-mods
                 break
             path: str = item_dict['path']; pid: str = item_dict['pid']
             log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
@@ -289,6 +304,7 @@ def manage_org_mods_update( orgs_list: list,
                 continue  
             err: str = call_api( path, pid )
             update_item_tracker( item_tracker_filepath, err )
+        update_org_tracker( org_tracker_filepath )
         log.info( f'finished processing org, ``{org}``' )
     return
 
