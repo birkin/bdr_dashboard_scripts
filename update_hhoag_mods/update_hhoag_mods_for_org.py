@@ -241,15 +241,23 @@ def update_item_tracker( item_tracker_filepath: pathlib.Path, err: str ) -> None
         Called by manage_org_mods_update(). """
     log.info( f'item_tracker_filepath, ``{item_tracker_filepath}``' )
     log.info( f'err, ``{err}``' )
+    ## ensure parent-paths exist ------------------------------------
+    item_tracker_filepath.parent.mkdir( parents=True, exist_ok=True )
+    ## write to file ------------------------------------------------
+    # err = 'foo-error'
+    timestamp: str = time.strftime( '%Y-%m-%d %H:%M:%S', time.localtime() )
     if not err:
+        msg = json.dumps( {'timestamp': timestamp, 'message': 'all_good'}, sort_keys=True, indent=2 )
         with open( item_tracker_filepath, 'w' ) as f:
-            f.write( 'all good' + '\n' )
+            f.write( msg )
     else:
-        new_filename = item_tracker_filepath.stem + '__problem.json'
+        existing_filename = item_tracker_filepath.name
+        new_filename = existing_filename.replace( '__item_updated.json', '__item_problem.json' )
         new_filepath = item_tracker_filepath.parent / new_filename
         log.info( f'new_filepath, ``{new_filepath}``' )
+        err_msg = json.dumps( {'timestamp': timestamp, 'err': err}, sort_keys=True, indent=2 )
         with open( new_filepath, 'w' ) as f:
-            f.write( err + '\n' )
+            f.write( err_msg )
     return
 
 ## helpers end ------------------------------------------------------
