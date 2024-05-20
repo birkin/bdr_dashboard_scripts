@@ -294,8 +294,8 @@ def manage_org_mods_update( orgs_list: list,
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
         for i, (hh_id, item_dict) in enumerate( org_data.items() ):
-            if i > 2:  # for testing, will process the org-mods and first item-mods
-                break
+            # if i > 2:  # for testing, will process the org-mods and first item-mods
+            #     break
             path: str = item_dict['path']; pid: str = item_dict['pid']
             log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
