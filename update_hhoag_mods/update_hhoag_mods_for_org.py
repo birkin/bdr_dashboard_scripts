@@ -27,9 +27,15 @@ from dotenv import load_dotenv, find_dotenv
 
 ## load envars -----------------------------------------------------
 load_dotenv( find_dotenv(raise_error_if_not_found=True) )
-BDR_API_ROOT = os.environ[ 'UHHM__BDR_API_URL_ROOT' ]  # UHHM for "update hall-hoag mods"
+BDR_API_ROOT: str = os.environ[ 'UHHM__BDR_API_URL_ROOT' ]  # UHHM for "update hall-hoag mods"
 LGLVL: str = os.environ.get( 'UHHM__LOGLEVEL', 'DEBUG' )
-
+BINARY_PATH: str = os.environ[ 'UHHM__UPDATE_MODS_BINARY_PATH' ]
+## for the `update_mods` python-binary (UM) ##
+BINARY_API_AGENT: str = os.environ[ 'UM__API_AGENT' ]
+BINARY_API_IDENTITY: str = os.environ[ 'UM__API_IDENTITY' ]
+BINARY_API_ROOT_URL: str = os.environ[ 'UM__API_ROOT_URL' ]
+BINARY_LOGLEVEL: str = os.environ.get( 'UM__LOGLEVEL', 'INFO' )
+BINARY_MESSAGE: str = os.environ[ 'UM__MESSAGE' ]
 
 ## setup logging ----------------------------------------------------
 lglvldct = {
@@ -70,11 +76,24 @@ def validate_arg_paths( mods_directory_path: pathlib.Path, tracker_directory_pat
 def display_envars() -> None:
     """ Displays envars.
         Called by dundermain. """
-    print( '\n')
-    print( 'Envars:' )
-    print( f'- BDR_API_ROOT, ``{BDR_API_ROOT}``' )
-    print( f'- LGLVL, ``{LGLVL}``' )
-    print( '\n' )
+    print( f'''
+
+Envars:
+          
+For this `update_hhoag_mods_for_org.py` script...
+- BDR_API_ROOT, ``{BDR_API_ROOT}``          
+- LGLVL, ``{LGLVL}``
+
+For the `update_mods_python_binary` file...
+- BINARY_PATH, ``{BINARY_PATH}``
+- BINARY_API_AGENT, ``{BINARY_API_AGENT}``
+- BINARY_API_IDENTITY, ``{BINARY_API_IDENTITY}``
+- BINARY_API_ROOT_URL, ``{BINARY_API_ROOT_URL}``
+- BINARY_LOGLEVEL, ``{BINARY_LOGLEVEL}``
+- BINARY_MESSAGE, ``{BINARY_MESSAGE}``
+
+(end)
+''')
     sys.exit( 0 )
     return
 
