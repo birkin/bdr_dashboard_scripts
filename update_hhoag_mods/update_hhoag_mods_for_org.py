@@ -230,13 +230,16 @@ def manage_org_mods_update( orgs_list: list,
         org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
-        for hh_id, item_dict in org_data.items():
+        for i, (hh_id, item_dict) in enumerate( org_data.items() ):
+            log.info( f'processing item, ``{hh_id}``' )
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
             # response_obj = hit_api( item_dict['path'], item_dict['pid'] )
             # update_tracker( item_tracker_filepath, response_obj )
+            if i > 1:
+                break
         log.info( f'finished processing org, ``{org}``' )
     return
 
