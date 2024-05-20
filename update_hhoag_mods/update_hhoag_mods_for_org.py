@@ -20,7 +20,7 @@ Code structure:
 - helper functions start at top in order of use.
 """
 
-import argparse, collections, json, logging, os, pathlib, pprint, sys, time
+import argparse, collections, json, logging, os, pathlib, pprint, subprocess, sys, time
 import requests
 from dotenv import load_dotenv, find_dotenv
 
@@ -215,14 +215,14 @@ def get_item_tracker_filepath( hh_id: str, tracker_directory_path: pathlib.Path 
 def call_api( path: str, pid: str ) -> None:
     """ Calls the API.
         Called by manage_org_mods_update(). """
-    import subprocess
     log.info( f'path, ``{path}``; pid, ``{pid}``' )
     ## call the binary ---------------------------------------------
     env_copy = os.environ.copy()
+    # cmd = [ BINARY_PATH, '--check_envars', 'True']; break  # will show envars perceived by the binary
     cmd = [ BINARY_PATH, '--mods_dirpath', path, '--bdr_pid', pid ]
     log.info( f'cmd, ``{cmd}``' )
-    # result = subprocess.run( cmd, env=env_copy, capture_output=True, text=True )
-    # log.debug( f'result, ``{result}``' )
+    result = subprocess.run( cmd, env=env_copy, capture_output=True, text=True )
+    log.info( f'result, ``{result}``' )
     return
 
 
@@ -245,21 +245,16 @@ def manage_org_mods_update( orgs_list: list,
         api_data: list = get_org_data_via_api( org )
         org_data: dict = merge_api_data_into_org_data( org_data, api_data )
         for i, (hh_id, item_dict) in enumerate( org_data.items() ):
-            log.info( f'processing item, ``{hh_id}-{item_dict["pid"]}``' )
-            log.info( f'item_dict, ``{pprint.pformat(item_dict)}``' )
-            log.info( f'type(item_dict), ``{type(item_dict)}``' )
-            log.info( f'item_dict.keys(), ``{item_dict.keys()}``' )
-            path = item_dict['path']
-            log.info( f'path, ``{path}``; type, ``{type(path)}``' )
-            pid = item_dict['pid']; log.info( f'pid, ``{pid}``; type, ``{type(pid)}``' )
+            if i > 1:  # for testing, will process the org-mods and first item-mods
+                break
+            path: str = item_dict['path']; pid: str = item_dict['pid']
+            log.info( f'processing ``{hh_id}-{pid}``' )
             item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
             item_already_processed: bool = check_tracker( item_tracker_filepath ) 
             if item_already_processed:
                 continue  
-            # result = call_api( item_dict['path'], item_dict['pid'] )
+            result = call_api( path, pid )
             # update_tracker( item_tracker_filepath, response_obj )
-            if i > 1:
-                break
         log.info( f'finished processing org, ``{org}``' )
     return
 
