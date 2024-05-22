@@ -361,8 +361,8 @@ if __name__ == '__main__':
     parser: argparse.ArgumentParser = config_parser()
     ## grab args ----------------------------------------------------
     args: argparse.Namespace = parser.parse_args()
-    orgs_list = [ ', '.join( args.org_list.split(',') ) ]
-    # mods_directory_path = pathlib.Path( args.mods_dir )
+    orgs_list = [org.strip() for org in args.org_list.split(',')]  # splits on comma and strips leading and trailing whitespaces
+    log.debug( f'orgs_list, ``{orgs_list}``' )
     mods_directory_path = pathlib.Path( args.mods_dir ).resolve()  # if a relative-path is submitted, this will resolve it to an absolute path
     tracker_directory_path = pathlib.Path( args.tracker_dir ).resolve()
     run_envar_check: str = args.check_envars
