@@ -44,6 +44,7 @@ lglvldct = {
 logging.basicConfig(
     level=lglvldct[LGLVL],  # assigns the level-object to the level-key loaded from the envar
     format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
+    filename='../logs/update_hhoag_mods.log',
     datefmt='%d/%b/%Y %H:%M:%S' )
 log = logging.getLogger( __name__ )
 
