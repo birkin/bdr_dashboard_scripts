@@ -37,19 +37,25 @@ BINARY_API_ROOT_URL: str = os.environ[ 'UM__API_ROOT_URL' ]
 BINARY_LOGLEVEL: str = os.environ.get( 'UM__LOGLEVEL', 'INFO' )
 BINARY_MESSAGE: str = os.environ[ 'UM__MESSAGE' ]
 
+
 ## setup logging ----------------------------------------------------
-lglvldct = {
-    'DEBUG': logging.DEBUG,
-    'INFO': logging.INFO }
+log_format = '[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s'
+date_format = '%d/%b/%Y %H:%M:%S'
+## file-logging ---------------------------------
+lglvldct = { 'DEBUG': logging.DEBUG, 'INFO': logging.INFO }
 logging.basicConfig(
-    level=lglvldct[LGLVL],  # assigns the level-object to the level-key loaded from the envar
-    format='[%(asctime)s] %(levelname)s [%(module)s-%(funcName)s()::%(lineno)d] %(message)s',
-    filename='../logs/update_hhoag_mods.log',
-    datefmt='%d/%b/%Y %H:%M:%S' )
+    level=lglvldct[LGLVL], format=log_format, filename='../logs/update_hhoag_mods.log', datefmt=date_format )
 log = logging.getLogger( __name__ )
+## console-logging ------------------------------
+ch = logging.StreamHandler()    # ch stands for `Console Handler`
+ch.setLevel(logging.INFO)       # this level may be different from the file-handler level set in the `.env`
+ch.setFormatter( logging.Formatter(log_format, datefmt=date_format) )
+log.addHandler(ch)
+logging.getLogger( 'fontTools' ).setLevel( logging.WARNING )  # suppresses fontTools info messages
 
 
 ## helpers start (manager function is after helpers) ----------------
+
 
 def config_parser() -> argparse.ArgumentParser:
     """ Configures parser.
@@ -275,35 +281,32 @@ def update_org_tracker( org_tracker_filepath: pathlib.Path ) -> None:
         f.write( msg )
     return
 
-# def process_item_loop( 
-#         org_data: dict, 
-#         tracker_directory_path: pathlib.Path, 
-#         org_tracker_filepath: pathlib.Path ) -> None:
-#     for i, (hh_id, item_dict) in enumerate( org_data.items() ):
-#         # if i > 2:  # for testing, will process the org-mods and first item-mods
-#         #     break
-#         log.info( f'\nprocessing item ``{hh_id}-{pid}``\n' )
-#         ## already processed? ---------------------------------------
-#         item_tracker_filepath: pathlib.Path = get_item_tracker_filepath( hh_id, tracker_directory_path )
-#         item_already_processed: bool = check_tracker( item_tracker_filepath ) 
-#         if item_already_processed:
-#             continue  
-#         ## process item ---------------------------------------------
-#         mods_path: str = item_dict['path']
-#         try:
-#             pid: str = item_dict['pid']
-#         except KeyError:
-#             err_msg = f'WARNING: pid not found for item ``{hh_id}``'
-#             log.warning( err_msg )
-#             update_item_tracker( item_tracker_filepath, err_msg )
-#             continue
-#         err: str = call_api( mods_path, pid )  # err generally ''
-#         update_item_tracker( item_tracker_filepath, err )  # updates tracker differently if there's an error
-#     return
+
+## helpers end ------------------------------------------------------
 
 
+## the two managers  ------------------------------------------------
 
-def process_item_loop( 
+def manage_org_mods_update( orgs_list: list, 
+                            mods_directory_path: pathlib.Path, 
+                            tracker_directory_path: pathlib.Path ) -> None:
+    """ Manager function
+        Called by dundermain. """
+    for org in orgs_list:
+        log.info( f'\n\nprocessing org, ``{org}``' )
+        org_tracker_filepath: pathlib.Path = get_org_tracker_filepath( org, tracker_directory_path )
+        org_already_processed: bool = check_tracker( org_tracker_filepath )
+        if org_already_processed:
+            continue
+        org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
+        api_data: list = get_org_data_via_api( org )
+        org_data: dict = merge_api_data_into_org_data( org_data, api_data )
+        manage_item_loop( org_data, tracker_directory_path, org_tracker_filepath )
+        update_org_tracker( org_tracker_filepath )
+        log.info( f'finished processing org, ``{org}``' )
+    return
+
+def manage_item_loop( 
         org_data: dict, 
         tracker_directory_path: pathlib.Path, 
         org_tracker_filepath: pathlib.Path ) -> None:
@@ -329,29 +332,6 @@ def process_item_loop(
         update_item_tracker( item_tracker_filepath, err )  # updates tracker differently if there's an error
     return
 
-
-## helpers end ------------------------------------------------------
-
-
-## manager  ---------------------------------------------------------
-def manage_org_mods_update( orgs_list: list, 
-                            mods_directory_path: pathlib.Path, 
-                            tracker_directory_path: pathlib.Path ) -> None:
-    """ Manager function
-        Called by dundermain. """
-    for org in orgs_list:
-        log.info( f'\n\nprocessing org, ``{org}``' )
-        org_tracker_filepath: pathlib.Path = get_org_tracker_filepath( org, tracker_directory_path )
-        org_already_processed: bool = check_tracker( org_tracker_filepath )
-        if org_already_processed:
-            continue
-        org_data: dict = get_filepath_data( org, mods_directory_path )  # value-dict contains path info at this point
-        api_data: list = get_org_data_via_api( org )
-        org_data: dict = merge_api_data_into_org_data( org_data, api_data )
-        process_item_loop( org_data, tracker_directory_path, org_tracker_filepath )
-        update_org_tracker( org_tracker_filepath )
-        log.info( f'finished processing org, ``{org}``' )
-    return
 
 ## dunndermain ------------------------------------------------------
 if __name__ == '__main__':
