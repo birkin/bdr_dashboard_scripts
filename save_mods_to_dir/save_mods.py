@@ -1,5 +1,9 @@
+import os, pathlib, pprint
+from dotenv import load_dotenv, find_dotenv
+
 ## load envars ------------------------------------------------------
 dotenv_path = pathlib.Path(__file__).resolve().parent.parent.parent / '.env'
+print( f'dotenv_path, ``{dotenv_path}``' )
 assert dotenv_path.exists(), f'file does not exist, ``{dotenv_path}``'
 # print( f'dotenv_path, ``{dotenv_path}``' )
 load_dotenv( 
