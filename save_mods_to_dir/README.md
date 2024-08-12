@@ -4,7 +4,7 @@
 
 Takes a list of pids, and an output-directory, and 
 - Saves the MODS to the directory
-- Saves a json mapping-file to the same directory, where each element of the mapper contains:
+- Maybe? Saves a json mapping-file to the same directory, where each element of the mapper contains:
     - the saved MODS filepath
     - the BDR pid
 
