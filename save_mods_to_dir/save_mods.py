@@ -5,6 +5,8 @@ $ python save_mods.py --output_dir_path "/path/to/output_dir" --pids_list_path "
 """
 
 import argparse, logging, os, pathlib, pprint, sys
+import urllib.request
+
 from dotenv import load_dotenv, find_dotenv
 
 
@@ -79,18 +81,28 @@ def validate_path( arg_path: str ) -> pathlib.Path:
 def download_mods( output_dir_path: pathlib.Path, pids_list_path: pathlib.Path ) -> None:
     """ Downloads MODS files to the specified directory, for given PIDS.
         Called by parse_args(). """
-    log.debug( f'output_dir_path, ``{output_dir_path}``' )
-    log.debug( f'pids_list_path, ``{pids_list_path}``' )
+    log.info( f'output_dir_path, ``{output_dir_path}``' )
+    log.info( f'pids_list_path, ``{pids_list_path}``' )
     with open( pids_list_path, 'r' ) as pids_file:
-        pids = pids_file.read().splitlines()
-    log.debug( f'pids, ``{pprint.pformat(pids)}``' )
+        pids: list = pids_file.read().splitlines()
+    log.info( f'pids to process, ``{pprint.pformat(pids)}``' )
+    errors = False
     for pid in pids:
-        log.debug( f'pid, ``{pid}``' )
+        log.debug( f'processing pid, ``{pid}``' )
         url = f'foo'
         log.debug( f'url, ``{url}``' )
         output_filepath = f'{output_dir_path}/{pid}.xml'
         log.debug( f'output_filepath, ``{output_filepath}``' )
-        os.system( f'curl -s -o {output_filepath} {url}' )
+        with urllib.request.urlopen(url) as response:
+            if response.status != 200:
+                errors = True
+                msg = f'failed to retrieve the file for pid, ``{pid}``. HTTP status code: {response.status}'
+                log.warning( msg )
+            
+            with open(output_filepath, 'wb') as out_file:
+                out_file.write(response.read())
+    if errors:
+        log.error( 'one or more errors occurred; see log-output' )
     return
 
 
@@ -101,9 +113,6 @@ def parse_args():
     parser: argparse.ArgumentParser = config_parser()
     ## grab args ----------------------------------------------------
     args = parser.parse_args()
-    ## version check ------------------------------------------------
-    # if args.version:
-    #     print( f'version-{COMMIT_HASH}' ); return
     ## check envars -------------------------------------------------
     if args.check_envars :
         display_envars(); return
