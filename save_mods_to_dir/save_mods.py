@@ -75,6 +75,36 @@ def validate_path( arg_path: str ) -> pathlib.Path:
     if not pth.exists():
         raise Exception( f'path, ``{arg_path}`` does not exist``' )
     return pth
+    
+
+def make_output_filepath( output_dir_path: pathlib.Path, pid: str ) -> pathlib.Path:
+    """ Creates the output filepath.
+        Called by download_mods(). """
+    pid_stem = ''
+    if ':' in pid:
+        pid_stem = pid.replace(':', '_')
+    else:
+        pid_stem = pid
+    pid_filename = f'{pid_stem}__MODS.xml'
+    output_filepath = pathlib.Path( f'{output_dir_path}/{pid_filename}' ).resolve()
+    log.debug( f'output_filepath, ``{output_filepath}``' )
+    return output_filepath
+
+
+def grab_and_save_mods( url: str, output_filepath: pathlib.Path, pid: str ) -> bool:
+    """ Grabs and saves the MODS file.
+        Called by download_mods(). """
+    log.debug( f'url, ``{url}``' )
+    log.debug( f'output_filepath, ``{output_filepath}``' )
+    errors = False
+    with urllib.request.urlopen( url ) as response:
+        if response.status != 200:
+            errors = True
+            msg = f'failed to retrieve the file for pid, ``{pid}``. HTTP status code: {response.status}'
+            log.warning( msg )
+        with open( output_filepath, 'wb' ) as mods_output_file:
+            mods_output_file.write( response.read() )
+    return errors
 
 
 def check_well_formed_xml( output_filepath: pathlib.Path, pid: str ) -> bool:
@@ -85,15 +115,17 @@ def check_well_formed_xml( output_filepath: pathlib.Path, pid: str ) -> bool:
     except ET.ParseError:
         validity = False
         log.warning( f'MODS for pid, ``{pid}`` is not valid xml' )
-    return validity
+    return validity\
+
 
 ## mamager functions ------------------------------------------------
 
+
 def download_mods( output_dir_path: pathlib.Path, pids_list_path: pathlib.Path ) -> None:
-    """ Downloads MODS files to the specified directory, for given PIDS.
+    """ Manager function.
+        Downloads MODS files to the specified directory, for given PIDS.
         Called by parse_args(). """
-    log.info( f'output_dir_path, ``{output_dir_path}``' )
-    log.info( f'pids_list_path, ``{pids_list_path}``' )
+    log.info( f'output_dir_path, ``{output_dir_path}``' ); log.info( f'pids_list_path, ``{pids_list_path}``' )
     with open( pids_list_path, 'r' ) as pids_file:
         pids: list = pids_file.read().splitlines()
     log.info( f'pids to process, ``{pprint.pformat(pids)}``' )
@@ -102,24 +134,12 @@ def download_mods( output_dir_path: pathlib.Path, pids_list_path: pathlib.Path )
         log.debug( f'processing pid, ``{pid}``' )
         url = MODS_URL_PATTERN.format( PID_VAR=pid )
         log.debug( f'url, ``{url}``' )
-        pid_stem = ''
-        if ':' in pid:
-            pid_stem = pid.replace(':', '_')
-        else:
-            pid_stem = pid
-        pid_filename = f'{pid_stem}__MODS.xml'
-        output_filepath = pathlib.Path( f'{output_dir_path}/{pid_filename}' ).resolve()
-        log.debug( f'output_filepath, ``{output_filepath}``' )
-        with urllib.request.urlopen(url) as response:
-            if response.status != 200:
-                errors = True
-                msg = f'failed to retrieve the file for pid, ``{pid}``. HTTP status code: {response.status}'
-                log.warning( msg )
-            
-            with open(output_filepath, 'wb') as out_file:
-                out_file.write(response.read())
-        ## check for valid xml (not validating against schema) ------
-        valid_xml = check_well_formed_xml( output_filepath, pid )
+        output_filepath: pathlib.Path = make_output_filepath( output_dir_path, pid )
+        problems: bool = grab_and_save_mods( url, output_filepath, pid )
+        if problems:
+            errors = True
+            continue
+        valid_xml: bool = check_well_formed_xml( output_filepath, pid )
         if not valid_xml:
             errors = True
     if errors:
