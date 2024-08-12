@@ -6,7 +6,7 @@ $ source ../../env/bin/activate
 $ python ./save_mods.py --output_dir_path "/path/to/output_dir" --pids_list_path "/path/to/bdr_pids.txt"
 """
 
-import argparse, logging, os, pathlib, pprint, sys
+import argparse, logging, os, pathlib, pprint, sys, time
 import urllib.request
 import xml.etree.ElementTree as ET
 from multiprocessing import Pool
@@ -101,13 +101,16 @@ def grab_and_save_mods( url: str, output_filepath: pathlib.Path, pid: str ) -> b
         Called by download_mods(). """
     log.debug( f'url, ``{url}``' )
     errors = False
+    log.debug( f'about to call urlopen() for pid, ``{pid}``' )
     with urllib.request.urlopen( url ) as response:
-        if response.status != 200:
+        if response.status == 200:
+            log.debug( f'got a 200 response for pid, ``{pid}``' )
+            with open( output_filepath, 'wb' ) as mods_output_file:
+                mods_output_file.write( response.read() )
+        else:
             errors = True
-            msg = f'failed to retrieve the file for pid, ``{pid}``. HTTP status code: {response.status}'
-            log.warning( msg )
-        with open( output_filepath, 'wb' ) as mods_output_file:
-            mods_output_file.write( response.read() )
+            log.warning( f'failed to retrieve the file for pid, ``{pid}``. HTTP status code: {response.status}' )
+    log.debug( f'errors, ``{errors}``' )
     return errors
 
 
@@ -125,23 +128,48 @@ def check_well_formed_xml( output_filepath: pathlib.Path, pid: str ) -> bool:
 ## mamager functions ------------------------------------------------
 
 
+# def download_mods( pid: str, output_dir_path: pathlib.Path ) -> None:
+#     """ Manager function.
+#         Downloads MODS files to the specified directory, for given PIDS.
+#         Called by parse_args(). """
+#     errors = False
+#     log.debug( f'processing pid, ``{pid}``' )
+#     url = MODS_URL_PATTERN.format( PID_VAR=pid )
+#     log.debug( f'url, ``{url}``' )
+#     output_filepath: pathlib.Path = make_output_filepath( output_dir_path, pid )
+#     problems: bool = grab_and_save_mods( url, output_filepath, pid )
+#     if problems:
+#         errors = True
+#     valid_xml: bool = check_well_formed_xml( output_filepath, pid )
+#     if not valid_xml:
+#         errors = True
+#     if errors:
+#         log.error( 'one or more errors occurred; see WARNING-level log-output' )
+#     return
+
+
 def download_mods( pid: str, output_dir_path: pathlib.Path ) -> None:
     """ Manager function.
         Downloads MODS files to the specified directory, for given PIDS.
         Called by parse_args(). """
-    errors = False
     log.debug( f'processing pid, ``{pid}``' )
     url = MODS_URL_PATTERN.format( PID_VAR=pid )
     log.debug( f'url, ``{url}``' )
-    output_filepath: pathlib.Path = make_output_filepath( output_dir_path, pid )
-    problems: bool = grab_and_save_mods( url, output_filepath, pid )
-    if problems:
-        errors = True
-    valid_xml: bool = check_well_formed_xml( output_filepath, pid )
-    if not valid_xml:
-        errors = True
-    if errors:
-        log.error( 'one or more errors occurred; see WARNING-level log-output' )
+    try:
+        output_filepath: pathlib.Path = make_output_filepath( output_dir_path, pid )
+    except Exception as e:
+        log.warning( f'problem creating output_filepath for pid, ``{pid}``; error, ``{e}``' )
+    try:
+        problems: bool = grab_and_save_mods( url, output_filepath, pid )
+
+        try:
+            valid_xml: bool = check_well_formed_xml( output_filepath, pid )
+        except Exception as e:
+            log.warning( f'problem checking well-formedness of MODS for pid, ``{pid}``; error, ``{e}``' )
+            valid_xml = False
+
+    except Exception as e:
+        log.warning( f'problem grabbing and saving MODS for pid, ``{pid}``; error, ``{e}``' )
     return
 
 
@@ -151,12 +179,19 @@ def run_multiprocessing( output_dir_path: pathlib.Path, pids_list_path: pathlib.
         Called by parse_args(). 
         Note: if I were just passing a pid to download_mods, I could use `pool.map( pids )`,
             but `pool.starmap()` allows for additional arguments. """
+    
+    start_mp_time = time.monotonic()
+
     with open( pids_list_path, 'r' ) as pids_file:
         pids: list = pids_file.read().splitlines()
         log.info( f'pids to process, ``{pprint.pformat(pids)}``' )
     with Pool( processes=4 ) as pool:
         args = [ (pid, output_dir_path) for pid in pids ]
         pool.starmap( download_mods, args )
+
+    elapsed_mp_time = time.monotonic() - start_time
+    log.info( f'total elapsed_mp_time, ``{elapsed_mp_time:.2f}`` seconds' )
+        
     return
 
 
@@ -185,4 +220,7 @@ def parse_args():
 
 ## dundermain  ------------------------------------------------------
 if __name__ == '__main__':
+    start_time = time.monotonic()
     parse_args()
+    elapsed_time = time.monotonic() - start_time
+    log.info( f'total elapsed time, ``{elapsed_time:.2f}`` seconds' )
