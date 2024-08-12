@@ -18,6 +18,10 @@ Suggestion... we put 50-word summaries here, and link to internal READMEs for mo
     - short summary: TODO
     - more info: TODO
 
+- `save_mods_to_dir`
+    - short summary: Takes a list of BDR-PIDs and downloads the MODS files to the specified directory.
+    - [more info](https://github.com/Brown-University-Library/bdr_scripts/blob/main/save_mods_to_dir/README.md)
+
 - `solr_collections`
     - short summary: TODO
     - [more info](https://github.com/Brown-University-Library/bdr_scripts/blob/main/solr_collections/README.md)
