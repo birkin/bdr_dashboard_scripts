@@ -6,6 +6,7 @@ $ python save_mods.py --output_dir_path "/path/to/output_dir" --pids_list_path "
 
 import argparse, logging, os, pathlib, pprint, sys
 import urllib.request
+import xml.etree.ElementTree as ET
 
 from dotenv import load_dotenv, find_dotenv
 
@@ -76,6 +77,16 @@ def validate_path( arg_path: str ) -> pathlib.Path:
     return pth
 
 
+def check_well_formed_xml( output_filepath: pathlib.Path, pid: str ) -> bool:
+    """ Checks if the file is well-formed XML. """
+    try:
+        ET.parse( output_filepath)
+        validity = True
+    except ET.ParseError:
+        validity = False
+        log.warning( f'MODS for pid, ``{pid}`` is not valid xml' )
+    return validity
+
 ## mamager functions ------------------------------------------------
 
 def download_mods( output_dir_path: pathlib.Path, pids_list_path: pathlib.Path ) -> None:
@@ -107,8 +118,12 @@ def download_mods( output_dir_path: pathlib.Path, pids_list_path: pathlib.Path )
             
             with open(output_filepath, 'wb') as out_file:
                 out_file.write(response.read())
+        ## check for valid xml (not validating against schema) ------
+        valid_xml = check_well_formed_xml( output_filepath, pid )
+        if not valid_xml:
+            errors = True
     if errors:
-        log.error( 'one or more errors occurred; see log-output' )
+        log.error( 'one or more errors occurred; see WARNING-level log-output' )
     return
 
 
