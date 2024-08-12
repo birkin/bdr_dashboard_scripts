@@ -130,7 +130,8 @@ def check_well_formed_xml( output_filepath: pathlib.Path, pid: str ):
 ## mamager functions ------------------------------------------------
 
 
-def download_mods( pid: str, output_dir_path: pathlib.Path ) -> None:
+# def download_mods( pid: str, output_dir_path: pathlib.Path ) -> None:
+def download_mods( pid: str, output_dir_path: pathlib.Path, index: int ) -> None:
     """ Manager function.
         Downloads MODS files to the specified directory, for given PIDS.
         Called by parse_args(). """
@@ -140,6 +141,9 @@ def download_mods( pid: str, output_dir_path: pathlib.Path ) -> None:
     output_filepath: pathlib.Path = make_output_filepath( output_dir_path, pid )
     grab_and_save_mods( url, output_filepath, pid )
     check_well_formed_xml( output_filepath, pid )
+    ## show progress ------------------------------------------------
+    if (index + 1) % 10 == 0:
+        log.info(f'Processed {index + 1} items.')
     return
 
 
@@ -153,7 +157,8 @@ def run_multiprocessing( output_dir_path: pathlib.Path, pids_list_path: pathlib.
         pids: list = pids_file.read().splitlines()
         log.info( f'pids to process, ``{pprint.pformat(pids)}``' )
     with Pool( processes=PROCESSES ) as pool:
-        args = [ (pid, output_dir_path) for pid in pids ]
+        # args = [ (pid, output_dir_path) for pid in pids ]
+        args = [ (pid, output_dir_path, index) for index, pid in enumerate(pids) ]
         pool.starmap( download_mods, args )        
     return
 
