@@ -21,7 +21,7 @@ load_dotenv(
     find_dotenv( str(dotenv_abs_path), raise_error_if_not_found=True ), 
     override=True 
     )
-LOGLEVEL: str = os.environ.get( 'SM__LOGLEVEL', 'DEBUG' )  # 'DEBUG' or 'INFO'
+LOGLEVEL: str = os.environ.get( 'SM__LOGLEVEL', 'INFO' )  # 'DEBUG' or 'INFO'
 MODS_URL_PATTERN = os.environ[ 'SM__MODS_URL_PATTERN' ]
 PROCESSES = os.environ.get( 'SM__PROCESSES', 2 )  # number of processes to run in parallel
 
