@@ -1,7 +1,9 @@
 """
 Script takes a list of BDR-PIDs and downloads the MODS files to the specified directory.
 Typical usage:
-$ python save_mods.py --output_dir_path "/path/to/output_dir" --pids_list_path "/path/to/bdr_pids.txt"
+$ cd /path/to/bdr_scripts_public/save_mods_to_dir/
+$ source ../../env/bin/activate
+$ python ./save_mods.py --output_dir_path "/path/to/output_dir" --pids_list_path "/path/to/bdr_pids.txt"
 """
 
 import argparse, logging, os, pathlib, pprint, sys
