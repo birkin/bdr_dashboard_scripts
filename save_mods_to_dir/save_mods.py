@@ -89,9 +89,15 @@ def download_mods( output_dir_path: pathlib.Path, pids_list_path: pathlib.Path )
     errors = False
     for pid in pids:
         log.debug( f'processing pid, ``{pid}``' )
-        url = f'foo'
+        url = MODS_URL_PATTERN.format( PID_VAR=pid )
         log.debug( f'url, ``{url}``' )
-        output_filepath = f'{output_dir_path}/{pid}.xml'
+        pid_stem = ''
+        if ':' in pid:
+            pid_stem = pid.replace(':', '_')
+        else:
+            pid_stem = pid
+        pid_filename = f'{pid_stem}__MODS.xml'
+        output_filepath = pathlib.Path( f'{output_dir_path}/{pid_filename}' ).resolve()
         log.debug( f'output_filepath, ``{output_filepath}``' )
         with urllib.request.urlopen(url) as response:
             if response.status != 200:
