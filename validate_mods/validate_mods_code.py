@@ -5,13 +5,18 @@ MODS XML Validator
 """
 
 import argparse
+from io import BytesIO
+
+import requests
 from lxml import etree
+
 
 def validate_mods_xml(xml_file_path):
     ## Parse the XML file
+    parser = etree.XMLParser()
     try:
-        with open(xml_file_path, 'rb') as xml_file:
-            xml_doc = etree.parse(xml_file)
+        with open( xml_file_path, 'rb' ) as xml_file:
+            xml_doc = etree.parse(xml_file, parser)
     except (etree.XMLSyntaxError, IOError) as e:
         print(f"Error reading XML file: {e}")
         return False
@@ -28,10 +33,19 @@ def validate_mods_xml(xml_file_path):
 
     ## Load the schema
     try:
-        with open(schema_url, 'rb') as schema_file:
-            schema_doc = etree.parse(schema_file)
+        if schema_url.startswith('http://') or schema_url.startswith('https://'):
+            # Fetch the schema from the URL
+            response = requests.get(schema_url)
+            response.raise_for_status()  # Raise an error for bad HTTP status codes
+            # schema_doc = etree.parse(BytesIO(response.content))
+            schema_doc = etree.parse(BytesIO(response.content), parser)
+        else:
+            # Load the schema from a local file
+            with open(schema_url, 'rb') as schema_file:
+                # schema_doc = etree.parse(schema_file)
+                schema_doc = etree.parse(schema_file, parser)
         xml_schema = etree.XMLSchema(schema_doc)
-    except (etree.XMLSyntaxError, IOError) as e:
+    except (etree.XMLSyntaxError, IOError, requests.RequestException) as e:
         print(f"Error loading schema: {e}")
         return False
 
@@ -49,9 +63,7 @@ def validate_mods_xml(xml_file_path):
 def main():
     parser = argparse.ArgumentParser(description='Validate a MODS XML file against its embedded schema.')
     parser.add_argument('--mods_path', required=True, help='Path to the MODS XML file to validate.')
-    
     args = parser.parse_args()
-    
     validate_mods_xml(args.mods_path)
 
 
